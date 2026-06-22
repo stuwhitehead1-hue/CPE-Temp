@@ -17,8 +17,7 @@
         .card {
             background: white;
             padding: 10px; 
-            /* Removed curved corners */
-            border-radius: 0px; 
+            border-radius: 0px; /* Completely sharp square corners */
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             text-align: center;
             width: 160px;
@@ -57,12 +56,14 @@
 </div>
 
 <script>
-    const CHANNEL_ID = 'YOUR_CHANNEL_ID'; 
-    const API_KEY = 'YOUR_API_KEY'; 
+    // Restored your working credentials
+    const CHANNEL_ID = '96086'; 
+    const API_KEY = '2d66bfb446d84a23a11b6fbc7dbd7899'; 
 
+    // Optimized API endpoints to prevent CORS/connection errors
     const urls = [
-        `https://api.ubibot.com/channels/${CHANNEL_ID}?api_key=${API_KEY}`,
-        `https://api.ubibot.io/channels/${CHANNEL_ID}?api_key=${API_KEY}`
+        `https://webapi.ubibot.com/channels/${CHANNEL_ID}?api_key=${API_KEY}`,
+        `https://api.ubibot.com/channels/${CHANNEL_ID}?api_key=${API_KEY}`
     ];
 
     async function fetchTemperature() {
@@ -91,7 +92,7 @@
                     try {
                         lastValues = JSON.parse(channelData.last_values);
                     } catch (e) {
-                        throw new Error("Malformed JSON payload");
+                        throw new Error("Malformed JSON payload inside last_values");
                     }
                     
                     const activeSensor = lastValues.field1 || lastValues.field7; 
@@ -100,12 +101,13 @@
                         const temperature = parseFloat(activeSensor.value);
                         display.innerText = `${temperature.toFixed(1)}°`; 
                         
+                        // Dynamic Threshold Logic
                         if (temperature < 21) {
-                            card.style.backgroundColor = "#2ecc71"; 
+                            card.style.backgroundColor = "#2ecc71"; // Green
                         } else if (temperature === 21) {
-                            card.style.backgroundColor = "#ffbf00"; 
+                            card.style.backgroundColor = "#ffbf00"; // Amber
                         } else { 
-                            card.style.backgroundColor = "#e74c3c"; 
+                            card.style.backgroundColor = "#e74c3c"; // Red
                         }
                         
                         display.style.color = "#ffffff";
@@ -113,12 +115,13 @@
                         return; 
                     }
                 }
-                throw new Error("No data found");
+                throw new Error("No active sensor data found");
             } catch (error) {
-                console.warn(`Failed endpoint fallback: ${url}`, error);
+                console.warn(`Endpoint fallback triggered for: ${url}`, error);
             }
         }
 
+        // Final UI error state fallback
         display.innerText = 'Err';
         display.style.color = '#ff5722';
         card.style.backgroundColor = 'white';
@@ -126,7 +129,7 @@
     }
 
     fetchTemperature();
-    setInterval(fetchTemperature, 300000);
+    setInterval(fetchTemperature, 300000); // Refreshes data every 5 minutes
 </script>
 
 </body>
