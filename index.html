@@ -6,7 +6,7 @@
     <title>UbiBot Temperature Monitor</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial, sans-serif; /* Changed default font to Arial */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -17,37 +17,39 @@
         .card {
             background: white;
             padding: 0; 
-            border-radius: 0px; /* Square corners */
+            border-radius: 6px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             text-align: center;
+            /* Explicit dimensions requested */
             width: 160px;
             height: 90px;
             box-sizing: border-box; 
-            overflow: hidden; 
-            position: relative; /* Restored for absolute child positioning */
+            
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             transition: background-color 0.5s ease, color 0.5s ease;
+            overflow: hidden; 
+            position: relative; 
         }
         h2 {
+            font-family: Arial, sans-serif; /* Explicitly forced Arial for the title */
             position: absolute;
-            top: 8px; 
-            left: 0;
-            right: 0;
+            top: 6px; 
             margin: 0;
             color: #333;
-            font-size: 0.9rem; 
+            font-size: 1rem; 
             line-height: 1.0;
             font-weight: 600;
         }
         .temp {
-            position: absolute;
-            top: 26px;
-            left: 0;
-            right: 0;
-            font-size: 3.2rem; 
+            font-family: Arial, sans-serif; /* Explicitly forced Arial for the value */
+            font-size: 3.4rem; 
             font-weight: bold;
             color: #ff5722;
-            margin: 0; 
-            line-height: 1.1; 
+            margin: 12px 0 0 0; 
+            line-height: 0.85; 
             letter-spacing: -1px; 
         }
     </style>
@@ -60,12 +62,14 @@
 </div>
 
 <script>
+    // Configured with your exact UbiBot credentials
     const CHANNEL_ID = '96086'; 
     const API_KEY = '2d66bfb446d84a23a11b6fbc7dbd7899'; 
 
+    // Correct UbiBot REST API Endpoint paths (View Channel structure)
     const urls = [
-        `https://webapi.ubibot.com/channels/${CHANNEL_ID}?api_key=${API_KEY}`,
-        `https://api.ubibot.com/channels/${CHANNEL_ID}?api_key=${API_KEY}`
+        `https://api.ubibot.com/channels/${CHANNEL_ID}?api_key=${API_KEY}`,
+        `https://api.ubibot.io/channels/${CHANNEL_ID}?api_key=${API_KEY}`
     ];
 
     async function fetchTemperature() {
@@ -90,35 +94,34 @@
                 let channelData = data.channel || (data.channels && data.channels[0]);
 
                 if (channelData && channelData.last_values) {
-                    let lastValues;
-                    try {
-                        lastValues = JSON.parse(channelData.last_values);
-                    } catch (e) {
-                        throw new Error("Malformed JSON");
-                    }
-                    
+                    const lastValues = JSON.parse(channelData.last_values);
                     const activeSensor = lastValues.field1 || lastValues.field7; 
 
                     if (activeSensor && activeSensor.value !== undefined) {
                         const temperature = parseFloat(activeSensor.value);
                         display.innerText = `${temperature.toFixed(1)}°`; 
                         
+                        // Dynamic Background Color Logic
                         if (temperature < 21) {
-                            card.style.backgroundColor = "#2ecc71"; 
+                            card.style.backgroundColor = "#2ecc71"; // Green
+                            display.style.color = "#ffffff";
+                            title.style.color = "#ffffff";
                         } else if (temperature === 21) {
-                            card.style.backgroundColor = "#ffbf00"; 
-                        } else { 
-                            card.style.backgroundColor = "#e74c3c"; 
+                            card.style.backgroundColor = "#ffbf00"; // Amber
+                            display.style.color = "#ffffff";
+                            title.style.color = "#ffffff";
+                        } else { // temperature > 21
+                            card.style.backgroundColor = "#e74c3c"; // Red
+                            display.style.color = "#ffffff";
+                            title.style.color = "#ffffff";
                         }
-                        
-                        display.style.color = "#ffffff";
-                        title.style.color = "#ffffff";
+
                         return; 
                     }
                 }
-                throw new Error("No data");
+                throw new Error("No data found");
             } catch (error) {
-                console.warn(`Fallback: ${url}`, error);
+                console.warn(`Failed endpoint fallback: ${url}`, error);
             }
         }
 
